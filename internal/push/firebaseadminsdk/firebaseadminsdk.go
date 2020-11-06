@@ -1,4 +1,4 @@
-package push
+package firebaseadminsdk
 
 import (
     "context"
@@ -11,6 +11,8 @@ import (
 
     firebase "firebase.google.com/go/v4"
     "firebase.google.com/go/v4/messaging"
+
+    "bilalekrem.com/pushnotification-service/internal/push"
 )
 
 type FirebasePushNotificationService struct {
@@ -39,7 +41,7 @@ func NewWithServiceAccount(serviceAccountFilePath string) *FirebasePushNotificat
     return &FirebasePushNotificationService{firebaseClient: app}
 }
 
-func (service FirebasePushNotificationService) Send(notification *Notification, token string) error {
+func (service FirebasePushNotificationService) Send(notification *push.Notification, token string) error {
     ctx := context.Background()
     client, err := service.firebaseClient.Messaging(ctx)
     if err != nil {

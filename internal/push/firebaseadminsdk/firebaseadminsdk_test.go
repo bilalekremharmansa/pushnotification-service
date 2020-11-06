@@ -1,9 +1,9 @@
-package push_test
+package firebaseadminsdk
 
 import (
     "testing"
 
-    push "bilalekrem.com/pushnotification-service/internal/push"
+    push "bilalekrem.com/pushnotification-service/internal/push/firebaseadminsdk"
 )
 
 func Test_init(t *testing.T) {
