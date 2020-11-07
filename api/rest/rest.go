@@ -4,8 +4,11 @@ import (
     "fmt"
     "log"
     "net/http"
+    "strconv"
 
     "github.com/gorilla/mux"
+
+    "bilalekrem.com/pushnotification-service/internal/config"
 
     "bilalekrem.com/pushnotification-service/api/rest/router"
 
@@ -39,9 +42,23 @@ func NewRestServerWithAddress(host string, port int) *Server {
     return &server
 }
 
+func NewRestServerWithConfig() *Server {
+    cfg := config.GetConfig()
+    serverConfig := cfg.ServerConfig
+
+    port, err := strconv.Atoi(serverConfig.Port)
+    if err != nil {
+        log.Fatalf("config -- server port is not decimal: [%s]", serverConfig.Port)
+    }
+
+    return NewRestServerWithAddress(serverConfig.Host, port)
+}
+
 func (server *Server) init() {
     server.registerRoutes(mgmt.Routes())
-    server.registerRoutes(push.Routes())
+
+    r := push.NewRouter()
+    server.registerRoutes(r.Routes())
 }
 
 func (server *Server) Start() {

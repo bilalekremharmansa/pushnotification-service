@@ -25,6 +25,7 @@ func NewWithServiceAccount(serviceAccountFilePath string) *FirebasePushNotificat
 
     var serviceAccount map[string]interface{}
     json.Unmarshal(serviceAccountAsBytes, &serviceAccount)
+    log.Println(serviceAccountFilePath)
 
     projectId := serviceAccount["project_id"].(string)
     log.Printf("Initializing Firebase app instance for project [%s]", projectId)
