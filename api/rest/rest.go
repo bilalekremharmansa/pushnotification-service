@@ -10,6 +10,7 @@ import (
     "bilalekrem.com/pushnotification-service/api/rest/router"
 
     "bilalekrem.com/pushnotification-service/api/rest/mgmt"
+    "bilalekrem.com/pushnotification-service/api/rest/push"
 )
 
 var (
@@ -40,6 +41,7 @@ func NewRestServerWithAddress(host string, port int) *Server {
 
 func (server *Server) init() {
     server.registerRoutes(mgmt.Routes())
+    server.registerRoutes(push.Routes())
 }
 
 func (server *Server) Start() {
