@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+option go_package = "bilalekrem.com/pushnotification-service/proto/pushservice";
+
+package push;
+
+import "proto/notification.proto";
+
+service PushNotificationService {
+  rpc Send (PushRequest) returns (PushResponse) {}
+}
+
+message PushRequest {
+  string token = 1;
+  notification.Notification notification = 2;
+}
+
+message PushResponse {
+  bool success = 1;
+}

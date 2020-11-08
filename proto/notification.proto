@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+option go_package = "bilalekrem.com/pushnotification-service/proto";
+
+package notification;
+
+message Notification {
+  string title = 1;
+  string body = 2;
+  string image = 3;
+}
