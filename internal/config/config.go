@@ -29,22 +29,20 @@ func InitConfig(filepath string) {
         // first unmarshall default config, then let config file override it
         err := yaml.Unmarshal(defaultConfig, &cfg)
         if err != nil {
-            log.Fatalf("config file could not be parsed: [%v]", err)
+            log.Fatalf("Parsing default config failed: [%v]", err)
         }
 
         log.Printf("Initializing config")
         configAsByte, err := ioutil.ReadFile(filepath)
         if err != nil {
-            log.Fatalf("config file could not read, [%v]", err)
+            log.Fatalf("Reading config file failed: [%v]", err)
         }
 
         err = yaml.Unmarshal(configAsByte, &cfg)
         if err != nil {
-            log.Fatalf("config file could not be parsed: [%v]", err)
+            log.Fatalf("Parsing config file failed: [%v]", err)
         }
 	})
-
-	log.Printf("Config: %s", cfg)
 }
 
 func GetConfig() config {

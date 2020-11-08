@@ -32,3 +32,10 @@ func NewWithFailureMessage(data interface{}) *Response {
         Success: false,
     }
 }
+
+func NewWithError(err error) *Response {
+    return &Response{
+        Data: err.Error(),
+        Success: false,
+    }
+}

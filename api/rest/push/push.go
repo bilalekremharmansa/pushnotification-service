@@ -17,7 +17,7 @@ func (router *pushRouter) SendPushNotification(w http.ResponseWriter, r *http.Re
 
     err = router.service.Send(notification, token)
     if err != nil {
-        httputils.EncodeJSONBody(w, r, response.NewWithFailureMessage("Sending PushNotification failed"))
+        httputils.EncodeJSONBody(w, r, response.NewWithError(err))
         return
     }
 

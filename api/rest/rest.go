@@ -64,6 +64,7 @@ func (server *Server) init() {
 func (server *Server) Start() {
     addr := fmt.Sprintf("%s:%d", server.host, server.port)
 
+    log.Printf("server is about to listen on: [%s]", addr)
     log.Fatal(http.ListenAndServe(addr, server.muxRouter))
 }
 

@@ -22,10 +22,15 @@ type FirebasePushNotificationService struct {
 func NewWithServiceAccount(serviceAccountFilePath string) *FirebasePushNotificationService {
     log.Printf("Reading file: %s -- ", serviceAccountFilePath)
     serviceAccountAsBytes, err := ioutil.ReadFile(serviceAccountFilePath)
+    if err != nil {
+        log.Fatalf("Reading service account failed: [%v]", err)
+    }
 
     var serviceAccount map[string]interface{}
-    json.Unmarshal(serviceAccountAsBytes, &serviceAccount)
-    log.Println(serviceAccountFilePath)
+    err = json.Unmarshal(serviceAccountAsBytes, &serviceAccount)
+    if err != nil {
+        log.Fatalf("Service account file could not be parsed: [%v]", err)
+    }
 
     projectId := serviceAccount["project_id"].(string)
     log.Printf("Initializing Firebase app instance for project [%s]", projectId)
@@ -34,11 +39,10 @@ func NewWithServiceAccount(serviceAccountFilePath string) *FirebasePushNotificat
     config := &firebase.Config{ProjectID: projectId}
     app, err := firebase.NewApp(context.Background(), config, opt)
     if err != nil {
-        log.Fatalf("error initializing app: %v\n", err)
+        log.Fatalf("Initializing Firebase app instance failed: [%v]", err)
     }
 
     log.Printf("Firebase app instance created successfully")
-
     return &FirebasePushNotificationService{firebaseClient: app}
 }
 
@@ -46,7 +50,7 @@ func (service FirebasePushNotificationService) Send(notification *push.Notificat
     ctx := context.Background()
     client, err := service.firebaseClient.Messaging(ctx)
     if err != nil {
-        log.Fatalf("error getting Messaging client: %v\n", err)
+        log.Printf("Getting messaging client failed: [%v]", err)
         return err
     }
 
