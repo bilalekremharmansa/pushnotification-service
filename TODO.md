@@ -3,6 +3,8 @@
 - Send push notification with Firebase Cloud Messaging
 - Send a single message with cli
 - REST api to send push
+- set default paths for file configs
+- gRPC support 
 
 - Build binary for different platforms
     - GOOS=windows go build -o cli.exe

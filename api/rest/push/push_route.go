@@ -20,6 +20,7 @@ func NewRouter() pushRouter {
 func (r *pushRouter) Routes() []router.Route {
 	return []router.Route {
 		router.NewPostRoute("/push", r.SendPushNotification),
+		router.NewPostRoute("/pushAsync", r.SendPushNotificationAsync),
     }
 }
 
