@@ -4,7 +4,6 @@ import (
     "fmt"
     "log"
     "net/http"
-    "strconv"
 
     "github.com/gorilla/mux"
 
@@ -23,35 +22,22 @@ var (
 
 type Server struct {
     muxRouter *mux.Router
+    enabled bool
     host string
     port int
 }
 
-func NewRestServer() *Server {
-    return NewRestServerWithAddress(DEFAULT_HOST, DEFAULT_PORT)
-}
-
-func NewRestServerWithAddress(host string, port int) *Server {
+func NewRestServerWithAddress(enabled bool, host string, port int) *Server {
     muxRouter := mux.NewRouter().StrictSlash(true)
     muxRouter.Use(restMiddleware)
 
-    server := Server{muxRouter: muxRouter, host: host, port: port}
-
-    server.init()
+    server := Server{muxRouter: muxRouter, enabled: enabled, host: host, port: port}
 
     return &server
 }
 
-func NewRestServerWithConfig() *Server {
-    cfg := config.GetConfig()
-    serverConfig := cfg.ServerConfig
-
-    port, err := strconv.Atoi(serverConfig.Port)
-    if err != nil {
-        log.Fatalf("config -- server port is not decimal: [%s]", serverConfig.Port)
-    }
-
-    return NewRestServerWithAddress(serverConfig.Host, port)
+func NewRestServerWithConfig(cfg config.RestConfig) *Server {
+    return NewRestServerWithAddress(cfg.GetEnabled(), cfg.GetHost(), cfg.GetPort())
 }
 
 func (server *Server) init() {
@@ -62,9 +48,16 @@ func (server *Server) init() {
 }
 
 func (server *Server) Start() {
+    if !server.enabled {
+        log.Println("[rest] server is disabled, not starting...")
+        return
+    }
+
+    server.init()
+
     addr := fmt.Sprintf("%s:%d", server.host, server.port)
 
-    log.Printf("server is about to listen on: [%s]", addr)
+    log.Printf("[rest] server is about to listen on: [%s]", addr)
     log.Fatal(http.ListenAndServe(addr, server.muxRouter))
 }
 

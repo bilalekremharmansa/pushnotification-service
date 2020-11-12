@@ -10,8 +10,9 @@ import (
 func main() {
     log.Println("Starting gRPC server")
 
-    config.InitConfig("/tmp/config.yaml")
+    config.InitDefaultConfig()
+    gRPCConfig := config.GetAppConfig().GetServersConfig().GetGRPCConfig()
 
-    server := grpc.NewServer()
+    server := grpc.NewGRPCServerWithConfig(gRPCConfig)
     server.Start()
 }

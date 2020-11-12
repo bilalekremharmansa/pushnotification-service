@@ -1,7 +1,6 @@
 package push
 
 import (
-    "bilalekrem.com/pushnotification-service/internal/config"
     "bilalekrem.com/pushnotification-service/internal/push/firebaseadminsdk"
     "bilalekrem.com/pushnotification-service/api/rest/router"
 )
@@ -11,8 +10,7 @@ type pushRouter struct {
 }
 
 func NewRouter() pushRouter {
-    serviceAccountFile := config.GetConfig().FirebaseConfig.ServiceAccountFile
-    service := firebaseadminsdk.NewWithServiceAccount(serviceAccountFile)
+    service := firebaseadminsdk.GetInstance()
 
     return pushRouter{service: service}
 }

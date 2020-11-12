@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"log"
+	"sync"
 
 	"github.com/spf13/cobra"
 
@@ -12,6 +13,7 @@ import (
     "bilalekrem.com/pushnotification-service/internal/push/firebaseadminsdk"
 
 	"bilalekrem.com/pushnotification-service/api/rest"
+	"bilalekrem.com/pushnotification-service/api/grpc"
 )
 
 var (
@@ -41,12 +43,16 @@ func init() {
         Use:   "run",
         Short: "run service",
         Run: func(cmd *cobra.Command, args []string) {
-            log.Println("Starting server")
-            server := rest.NewRestServerWithConfig()
-            server.Start()
+            log.Println("Starting servers")
+
+            initConfig()
+            startServers()
         },
     }
-    runCmd.PersistentFlags().StringVar(&cfgFile, "config", "/tmp/config.yaml", "config file (default is /tmp/config.yaml)")
+
+    runCmd.
+        PersistentFlags().
+        StringVar(&cfgFile, "config", config.GetDefaultConfigPath(), fmt.Sprintf("config file path"))
     rootCmd.AddCommand(runCmd)
 
     initSendPushCommand(rootCmd)
@@ -71,7 +77,9 @@ func initSendPushCommand(rootCommand *cobra.Command) {
     cmd.PersistentFlags().StringVar(&token, "token", "", "push notification token to send push notification server")
     cmd.PersistentFlags().StringVar(&title, "title", "", "title of push notification")
     cmd.PersistentFlags().StringVar(&body, "body", "", "body of push notification")
-    cmd.PersistentFlags().StringVar(&serviceAccountFilePath, "service-account-file", "", "path of service account file")
+
+    cmd.PersistentFlags().StringVar(&serviceAccountFilePath, "service-account-file",
+            config.GetDefaultServiceAccountFilePath(), "service account file path (json format)")
 
     rootCmd.AddCommand(cmd)
 }
@@ -82,7 +90,55 @@ func er(msg interface{}) {
 }
 
 func initConfig() {
-    log.Println(cfgFile)
+    if cfgFile != "" {
+        config.InitConfig(cfgFile)
+        return
+    }
 
-    config.InitConfig(cfgFile)
+    defaultConfigFilePath := config.GetDefaultConfigPath()
+    if !fileExists(defaultConfigFilePath) {
+        config.InitConfig(defaultConfigFilePath)
+        return
+    }
+
+
+    config.InitDefaultConfig()
+}
+
+func fileExists(filename string) bool {
+    info, err := os.Stat(filename)
+    if os.IsNotExist(err) {
+        return false
+    }
+    return !info.IsDir()
+}
+
+func startServers() {
+    serversConfig := config.GetAppConfig().GetServersConfig()
+
+    // --
+
+    var wg sync.WaitGroup
+
+    // -- rest server
+    wg.Add(1)
+    go func() {
+        defer wg.Done()
+
+        restConfig := serversConfig.GetRestConfig()
+        restServer := rest.NewRestServerWithConfig(restConfig)
+        restServer.Start()
+    }()
+
+    // -- gRPC server
+    wg.Add(1)
+    go func() {
+        defer wg.Done()
+
+        gRPCConfig := serversConfig.GetGRPCConfig()
+        gRPCServer := grpc.NewGRPCServerWithConfig(gRPCConfig)
+        gRPCServer.Start()
+    }()
+
+    wg.Wait()
 }

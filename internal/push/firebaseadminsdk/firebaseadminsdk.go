@@ -13,14 +13,31 @@ import (
     "firebase.google.com/go/v4/messaging"
 
     "bilalekrem.com/pushnotification-service/internal/push"
+    "bilalekrem.com/pushnotification-service/internal/config"
 )
 
 type FirebasePushNotificationService struct {
     firebaseClient *firebase.App
 }
 
+var (
+    // it is designed to use as a single service account per process
+    instance *FirebasePushNotificationService
+)
+
+// this function returns a *FirebasePushNotificationService instance and uses service account in AppConfig. This instance
+// will be served as a singleton instance for current feature set
+func GetInstance() *FirebasePushNotificationService {
+    if instance != nil {
+        return instance
+    }
+
+    serviceAccountFile := config.GetAppConfig().GetFirebaseConfig().GetServiceAccountFile()
+    return NewWithServiceAccount(serviceAccountFile)
+}
+
 func NewWithServiceAccount(serviceAccountFilePath string) *FirebasePushNotificationService {
-    log.Printf("Reading file: %s -- ", serviceAccountFilePath)
+    log.Printf("Reading file: [%s]", serviceAccountFilePath)
     serviceAccountAsBytes, err := ioutil.ReadFile(serviceAccountFilePath)
     if err != nil {
         log.Fatalf("Reading service account failed: [%v]", err)
@@ -43,7 +60,9 @@ func NewWithServiceAccount(serviceAccountFilePath string) *FirebasePushNotificat
     }
 
     log.Printf("Firebase app instance created successfully")
-    return &FirebasePushNotificationService{firebaseClient: app}
+    instance = &FirebasePushNotificationService{firebaseClient: app}
+
+    return instance
 }
 
 func (service FirebasePushNotificationService) Send(notification *push.Notification, token string) error {

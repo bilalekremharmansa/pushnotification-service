@@ -8,29 +8,26 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
+	"bilalekrem.com/pushnotification-service/internal/config"
 	"bilalekrem.com/pushnotification-service/api/grpc/pushservice"
 	pb "bilalekrem.com/pushnotification-service/proto/pushservice"
 )
 
-var (
-    DEFAULT_HOST = ""
-    DEFAULT_PORT = 8080
-)
-
 type grpcServer struct {
     server *grpc.Server
+    enabled bool
     host string
     port int
 }
 
-func NewServer() *grpcServer {
+func NewGRPCServerWithConfig(cfg config.GRPCConfig) *grpcServer {
+    return NewGRPCServerWithAddress(cfg.GetEnabled(), cfg.GetHost(), cfg.GetPort())
+}
+
+func NewGRPCServerWithAddress(enabled bool, host string, port int) *grpcServer {
     gRpcServer := grpc.NewServer()
 
-    s := &grpcServer{server: gRpcServer, host: DEFAULT_HOST, port:DEFAULT_PORT}
-
-    s.init()
-
-    return s
+    return &grpcServer{server: gRpcServer, enabled: enabled, host: host, port:port}
 }
 
 func (g *grpcServer) init() {
@@ -40,6 +37,13 @@ func (g *grpcServer) init() {
 }
 
 func (g *grpcServer) Start() {
+    if !g.enabled {
+        log.Println("[gRPC] server is disabled, not starting...")
+        return
+    }
+
+    g.init()
+
     address := fmt.Sprintf("%s:%d", g.host, g.port)
 
     lis, err := net.Listen("tcp", address)
@@ -47,9 +51,9 @@ func (g *grpcServer) Start() {
         log.Fatalf("failed to listen: %v", err)
     }
 
-    log.Printf("server is about to listen on: [%s]", address)
+    log.Printf("[gRPC] server is about to listen on: [%s]", address)
 
     if err := g.server.Serve(lis); err != nil {
-        log.Fatalf("failed to serve: %v", err)
+        log.Fatalf("[gRPC] failed to serve: %v", err)
     }
 }

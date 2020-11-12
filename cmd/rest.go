@@ -3,12 +3,16 @@ package main
 import (
     "log"
 
+    "bilalekrem.com/pushnotification-service/internal/config"
     "bilalekrem.com/pushnotification-service/api/rest"
 )
 
 func main() {
-    log.Println("Starting server")
+    log.Println("Starting [rest] server")
 
-    server := rest.NewRestServer()
+    config.InitDefaultConfig()
+    restConfig := config.GetAppConfig().GetServersConfig().GetRestConfig()
+
+    server := rest.NewRestServerWithConfig(restConfig)
     server.Start()
 }

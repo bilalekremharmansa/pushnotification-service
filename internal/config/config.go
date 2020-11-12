@@ -1,36 +1,34 @@
 package config
 
 import (
+    "fmt"
     "log"
     "sync"
+    "bytes"
+    "runtime"
 
     "io/ioutil"
+    "text/template"
+
     "gopkg.in/yaml.v2"
 )
 
-type config struct {
-    ServerConfig struct {
-        Host string `yaml:"host"`
-        Port string `yaml:"port"`
-    } `yaml:"server"`
-
-    FirebaseConfig struct {
-        ServiceAccountFile string `yaml:"serviceAccountFile"`
-    } `yaml:"firebase"`
-}
-
 var (
     once sync.Once
-	cfg config
+	cfg appConfig
 )
+
+func InitDefaultConfig() {
+    once.Do(func() {
+        // first unmarshall default config, then let config file override it
+        initDefaultConfig()
+	})
+}
 
 func InitConfig(filepath string) {
     once.Do(func() {
         // first unmarshall default config, then let config file override it
-        err := yaml.Unmarshal(defaultConfig, &cfg)
-        if err != nil {
-            log.Fatalf("Parsing default config failed: [%v]", err)
-        }
+        initDefaultConfig()
 
         log.Printf("Initializing config")
         configAsByte, err := ioutil.ReadFile(filepath)
@@ -45,17 +43,68 @@ func InitConfig(filepath string) {
 	})
 }
 
-func GetConfig() config {
+func GetAppConfig() AppConfig {
 	return cfg
 }
 
 // --
 
-var defaultConfig = []byte(
+func initDefaultConfig() {
+    err := yaml.Unmarshal([]byte(parseConfigTemplate()), &cfg)
+    if err != nil {
+        log.Fatalf("Parsing default config failed: [%v]", err)
+    }
+
+    log.Println(cfg)
+}
+
+func parseConfigTemplate() string {
+	params := make(map[string]string)
+	params["serviceAccountFile"] = GetDefaultServiceAccountFilePath()
+
+	temp, err := template.New("config-template").Parse(configTemplate)
+    if err != nil {
+        log.Fatal("Error occurred while creating config template")
+    }
+
+    var tpl bytes.Buffer
+    err = temp.Execute(&tpl, params)
+    if err != nil {
+        log.Fatal("Error occurred while parsing config template")
+    }
+    return tpl.String()
+}
+
+func GetDefaultConfigBaseDirPath() string {
+    // windows
+    if runtime.GOOS == "windows" {
+        return "@todo"
+    } else { // unix
+        return "/etc/pushnotification-service"
+    }
+}
+
+func GetDefaultConfigPath() string {
+    return fmt.Sprintf("%s/config.yaml", GetDefaultConfigBaseDirPath())
+}
+
+func GetDefaultServiceAccountFilePath() string {
+    return fmt.Sprintf("%s/serviceAccount.json", GetDefaultConfigBaseDirPath())
+}
+
+// --
+
+var configTemplate =
 `
-server:
-   host: ""
-   port: 8080
+servers:
+    rest:
+        enabled: true
+        host: ""
+        port: 8080
+    gRPC:
+        enabled: true
+        host: ""
+        port: 18080
 firebase:
-   serviceAccountFile: "/tmp/serviceAccount.json"
-`)
+    serviceAccountFile: "{{.serviceAccountFile}}"
+`

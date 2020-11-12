@@ -5,7 +5,6 @@ import (
 	"log"
 
     "bilalekrem.com/pushnotification-service/internal/push"
-    "bilalekrem.com/pushnotification-service/internal/config"
     "bilalekrem.com/pushnotification-service/internal/push/firebaseadminsdk"
 
     pb "bilalekrem.com/pushnotification-service/proto/pushservice"
@@ -18,9 +17,7 @@ type pushService struct {
 }
 
 func NewService() *pushService {
-    serviceAccountFile := config.GetConfig().FirebaseConfig.ServiceAccountFile
-    service := firebaseadminsdk.NewWithServiceAccount(serviceAccountFile)
-    return &pushService{service: service}
+    return &pushService{service: firebaseadminsdk.GetInstance()}
 }
 
 func (ps *pushService) Send(ctx context.Context, in *pb.PushRequest) (*pb.PushResponse, error) {
