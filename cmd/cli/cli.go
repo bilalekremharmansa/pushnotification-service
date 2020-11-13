@@ -26,7 +26,7 @@ var (
 	serviceAccountFilePath     string
 
 	rootCmd = &cobra.Command{
-		Use:   "pushnotification-service",
+		Use:   "pns",
 		Short: "push notification service",
 		Long: ``,
 	}
@@ -39,9 +39,9 @@ func Execute() error {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	runCmd := &cobra.Command{
-        Use:   "run",
-        Short: "run service",
+	serverCmd := &cobra.Command{
+        Use:   "server",
+        Short: "run server(s) (default [rest, gRPC] enabled)",
         Run: func(cmd *cobra.Command, args []string) {
             log.Println("Starting servers")
 
@@ -50,10 +50,10 @@ func init() {
         },
     }
 
-    runCmd.
+    serverCmd.
         PersistentFlags().
-        StringVar(&cfgFile, "config", config.GetDefaultConfigPath(), fmt.Sprintf("config file path"))
-    rootCmd.AddCommand(runCmd)
+        StringVar(&cfgFile, "config", "", fmt.Sprintf("config file path (default: '%s')", config.GetDefaultConfigPath()))
+    rootCmd.AddCommand(serverCmd)
 
     initSendPushCommand(rootCmd)
 }
@@ -96,11 +96,10 @@ func initConfig() {
     }
 
     defaultConfigFilePath := config.GetDefaultConfigPath()
-    if !fileExists(defaultConfigFilePath) {
+    if fileExists(defaultConfigFilePath) {
         config.InitConfig(defaultConfigFilePath)
         return
     }
-
 
     config.InitDefaultConfig()
 }

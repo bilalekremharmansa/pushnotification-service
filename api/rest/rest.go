@@ -15,11 +15,6 @@ import (
     "bilalekrem.com/pushnotification-service/api/rest/push"
 )
 
-var (
-    DEFAULT_HOST = ""
-    DEFAULT_PORT = 8080
-)
-
 type Server struct {
     muxRouter *mux.Router
     enabled bool
