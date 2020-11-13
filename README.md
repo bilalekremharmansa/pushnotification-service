@@ -25,8 +25,8 @@ Use existing "pns" image as your base image like below:
 
 ```
 FROM bilalekremharmansa/pns:latest
-COPY config.yaml /etc/pushnotification-service/
-COPY serviceAccount.json /etc/pushnotification-service/
+COPY config.yaml /etc/pns.d/
+COPY serviceAccount.json /etc/pns.d/
 
 WORKDIR /app
 ENTRYPOINT ["./pns"]

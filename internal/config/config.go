@@ -80,7 +80,7 @@ func GetDefaultConfigBaseDirPath() string {
     if runtime.GOOS == "windows" {
         return "@todo"
     } else { // unix
-        return "/etc/pushnotification-service"
+        return "/etc/pns.d"
     }
 }
 
