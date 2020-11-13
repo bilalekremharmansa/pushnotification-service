@@ -72,3 +72,12 @@ Run push notification service like below,
 ```bash
 $ build/pns server
 ```
+
+
+### TODO
+
+- Kafka support
+
+## License
+
+Apache License 2.0, see [LICENSE](https://github.com/bilalekremharmansa/pushnotication-service/blob/master/LICENSE).

@@ -1,7 +1,7 @@
 package config
 
 import (
-    "fmt"
+    "os"
     "log"
     "sync"
     "bytes"
@@ -9,6 +9,7 @@ import (
 
     "io/ioutil"
     "text/template"
+    "path/filepath"
 
     "gopkg.in/yaml.v2"
 )
@@ -78,18 +79,19 @@ func parseConfigTemplate() string {
 func GetDefaultConfigBaseDirPath() string {
     // windows
     if runtime.GOOS == "windows" {
-        return "@todo"
+        appData := os.Getenv("APPDATA")
+        return filepath.Join(appData, "pns")
     } else { // unix
         return "/etc/pns.d"
     }
 }
 
 func GetDefaultConfigPath() string {
-    return fmt.Sprintf("%s/config.yaml", GetDefaultConfigBaseDirPath())
+    return filepath.Join(GetDefaultConfigBaseDirPath(), "config.yaml")
 }
 
 func GetDefaultServiceAccountFilePath() string {
-    return fmt.Sprintf("%s/serviceAccount.json", GetDefaultConfigBaseDirPath())
+    return filepath.Join(GetDefaultConfigBaseDirPath(), "serviceAccount.json")
 }
 
 // --

@@ -2,17 +2,25 @@ DOCKER_IMAGE_TAG := 0.0.1
 
 .PHONY: build generate-proto
 
-build:
-	go build -o build/pns cmd/main.go
+define build_go_file
+	GOOS=windows go build -o build/$(1).exe cmd/$(2).go
+	GOOS=linux go build -o build/$(1) cmd/$(2).go
+endef
+
+build:clean-build
+	$(call build_go_file,pns,main)
 
 build-docker:
 	docker build -t pns .
 
-build-rest:
-	go build -o build/rest cmd/rest.go
+build-rest:clean-build
+	$(call build_go_file,rest,rest)
 
-build-grpc:
-	go build -o build/grpc cmd/grpc.go
+build-grpc: clean-build
+	$(call build_go_file,grpc,grpc)
+
+clean-build:
+	rm -rf build/
 
 publish-dockerhub:
 	docker build -t bilalekremharmansa/pns:${DOCKER_IMAGE_TAG} .
